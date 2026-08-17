@@ -1,66 +1,327 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Simple PDF Generator - Works!</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js">
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Converter Pro</title>
+    <!-- Tailwind CSS for UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- pdf-lib for merging, splitting, image/text/HTML conversion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <!-- html2pdf.js for HTML to PDF engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        .tab-btn.active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+    </style>
 </head>
-<body style="font-family: system-ui; max-width: 600px; margin: 50px auto; padding: 20px; background: #f5f8fc;">
-    <h1 style="color: #1a4f7a;">📄 Simple PDF Generator</h1>
-    <p style="color: #3a5c7a;">This <strong>definitely works</strong> - click the button to create a PDF.</p>
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans">
 
-    <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin: 20px 0;">
-        <label style="font-weight: 600; display: block; margin-bottom: 8px;">Enter your text:</label>
-        <textarea id="myText" rows="4" style="width: 100%; padding: 12px; border: 2px solid #dae2ec; border-radius: 12px; font-size: 16px;">Hello! This PDF was generated successfully.</textarea>
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 text-white p-2 rounded-lg font-bold text-xl">PDF</div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900">Converter Pro</h1>
+            </div>
+            <span class="text-xs bg-slate-100 text-slate-600 font-medium px-2.5 py-1 rounded-full border border-slate-200">100% Client-Side & Secure</span>
+        </div>
+    </header>
 
-        <button onclick="generatePDF()" style="margin-top: 16px; background: #1a4f7a; color: white; border: none; padding: 14px 32px; border-radius: 50px; font-size: 18px; font-weight: 600; cursor: pointer;">
-            ⬇️ Generate & Download PDF
-        </button>
-    </div>
+    <!-- Main Container -->
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        
+        <!-- Tab Navigation -->
+        <div class="flex border-b border-slate-200 mb-8 overflow-x-auto">
+            <button onclick="switchTab('images-to-pdf')" id="tab-images-to-pdf" class="tab-btn active px-5 py-3 text-sm flex items-center gap-2 whitespace-nowrap">
+                🖼️ Images to PDF
+            </button>
+            <button onclick="switchTab('merge-pdf')" id="tab-merge-pdf" class="tab-btn px-5 py-3 text-sm flex items-center gap-2 whitespace-nowrap">
+                📑 Merge PDFs
+            </button>
+            <button onclick="switchTab('split-pdf')" id="tab-split-pdf" class="tab-btn px-5 py-3 text-sm flex items-center gap-2 whitespace-nowrap">
+                ✂️ Extract Pages
+            </button>
+            <button onclick="switchTab('text-to-pdf')" id="tab-text-to-pdf" class="tab-btn px-5 py-3 text-sm flex items-center gap-2 whitespace-nowrap">
+                📝 Text to PDF
+            </button>
+            <button onclick="switchTab('html-to-pdf')" id="tab-html-to-pdf" class="tab-btn px-5 py-3 text-sm flex items-center gap-2 whitespace-nowrap">
+                🌐 HTML to PDF
+            </button>
+        </div>
 
-    <div id="status" style="padding: 16px; background: #e8f0fe; border-radius: 12px; color: #1a4f7a; font-weight: 500;">
-        ✅ Ready - click the button above
-    </div>
+        <!-- Tool Panels -->
+        <div id="tool-container" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 min-h-[400px]">
+            
+            <!-- 1. IMAGES TO PDF -->
+            <section id="panel-images-to-pdf" class="space-y-6">
+                <h2 class="text-lg font-semibold text-slate-900">Convert Images to PDF</h2>
+                <div class="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center bg-slate-50 hover:bg-slate-100 transition">
+                    <input type="file" id="img-input" multiple accept="image/png, image/jpeg, image/jpg" class="hidden" onchange="handleImageSelect(event)">
+                    <label for="img-input" class="cursor-pointer space-y-2 block">
+                        <div class="text-4xl">📸</div>
+                        <p class="font-medium text-slate-700">Click to upload images</p>
+                        <p class="text-xs text-slate-500">Supports PNG, JPG, JPEG</p>
+                    </label>
+                </div>
+                <div id="img-preview" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+                <button onclick="convertImagesToPdf()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition disabled:opacity-50">Download Combined PDF</button>
+            </section>
+
+            <!-- 2. MERGE PDF -->
+            <section id="panel-merge-pdf" class="space-y-6 hidden">
+                <h2 class="text-lg font-semibold text-slate-900">Merge Multiple PDFs</h2>
+                <div class="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center bg-slate-50 hover:bg-slate-100 transition">
+                    <input type="file" id="merge-input" multiple accept="application/pdf" class="hidden" onchange="handleMergeSelect(event)">
+                    <label for="merge-input" class="cursor-pointer space-y-2 block">
+                        <div class="text-4xl">📂</div>
+                        <p class="font-medium text-slate-700">Click to upload PDF files</p>
+                        <p class="text-xs text-slate-500">Select two or more PDF files to combine</p>
+                    </label>
+                </div>
+                <ul id="merge-list" class="divide-y divide-slate-100 border rounded-lg"></ul>
+                <button onclick="mergePdfs()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition">Merge & Download PDF</button>
+            </section>
+
+            <!-- 3. EXTRACT PAGES -->
+            <section id="panel-split-pdf" class="space-y-6 hidden">
+                <h2 class="text-lg font-semibold text-slate-900">Extract Pages from PDF</h2>
+                <div class="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center bg-slate-50 hover:bg-slate-100 transition">
+                    <input type="file" id="split-input" accept="application/pdf" class="hidden" onchange="handleSplitSelect(event)">
+                    <label for="split-input" class="cursor-pointer space-y-2 block">
+                        <div class="text-4xl">📄</div>
+                        <p id="split-file-name" class="font-medium text-slate-700">Click to upload a PDF file</p>
+                    </label>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Enter page numbers/ranges to extract (e.g., 1, 3-5):</label>
+                    <input type="text" id="split-range" placeholder="e.g. 1, 3, 5-7" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button onclick="extractPdfPages()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition">Extract & Download Pages</button>
+            </section>
+
+            <!-- 4. TEXT TO PDF -->
+            <section id="panel-text-to-pdf" class="space-y-6 hidden">
+                <h2 class="text-lg font-semibold text-slate-900">Convert Plain Text to PDF</h2>
+                <textarea id="text-input" rows="10" placeholder="Type or paste your text here..." class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                <button onclick="convertTextToPdf()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition">Generate & Download PDF</button>
+            </section>
+
+            <!-- 5. HTML TO PDF -->
+            <section id="panel-html-to-pdf" class="space-y-6 hidden">
+                <h2 class="text-lg font-semibold text-slate-900">Convert HTML Content to PDF</h2>
+                <textarea id="html-input" rows="10" placeholder="<h1>Hello World</h1><p>Type your raw HTML here...</p>" class="w-full border border-slate-300 rounded-lg p-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                <div id="html-render-target" class="hidden"></div>
+                <button onclick="convertHtmlToPdf()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition">Render HTML & Download PDF</button>
+            </section>
+
+        </div>
+    </main>
 
     <script>
-        function generatePDF() {
-            const { jsPDF } = window.jspdf;
-            const text = document.getElementById('myText').value || 'No text entered.';
+        // State variables
+        let selectedImages = [];
+        let selectedMergeFiles = [];
+        let selectedSplitFile = null;
 
-            // Create PDF
-            const doc = new jsPDF('p', 'mm', 'a4');
-            const pageWidth = 210;
-            const margin = 20;
-            const lines = doc.splitTextToSize(text, pageWidth - margin * 2);
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('#tool-container > section').forEach(panel => panel.classList.add('hidden'));
 
-            // Add title
-            doc.setFontSize(18);
-            doc.text('My PDF Document', margin, 25);
-            doc.setFontSize(12);
-            doc.text(lines, margin, 40);
-
-            // Add a footer
-            doc.setFontSize(10);
-            doc.text('Generated by PDF Converter', margin, 280);
-
-            // Save the PDF
-            doc.save('my-document.pdf');
-
-            // Update status
-            document.getElementById('status').innerHTML =
-                `✅ PDF generated and downloaded! (${text.length} characters, ${lines.length} lines)`;
-            document.getElementById('status').style.background = '#d4edda';
-            document.getElementById('status').style.color = '#155724';
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.getElementById(`panel-${tabId}`).classList.remove('hidden');
         }
 
-        // Test if jsPDF loaded
-        if (typeof window.jspdf === 'undefined') {
-            document.getElementById('status').innerHTML =
-                '❌ Error: jsPDF library failed to load. Please check your internet connection and try again.';
-            document.getElementById('status').style.background = '#f8d7da';
-            document.getElementById('status').style.color = '#721c24';
-        } else {
-            console.log('✅ jsPDF loaded successfully');
+        // Helper: File to ArrayBuffer
+        const readFileAsArrayBuffer = file => new Promise((res, rej) => {
+            const reader = new FileReader();
+            reader.onload = () => res(reader.result);
+            reader.onerror = rej;
+            reader.readAsArrayBuffer(file);
+        });
+
+        // 1. IMAGES TO PDF
+        function handleImageSelect(e) {
+            selectedImages = Array.from(e.target.files);
+            const preview = document.getElementById('img-preview');
+            preview.innerHTML = '';
+            selectedImages.forEach(file => {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.className = 'w-full h-24 object-cover rounded-lg border border-slate-200';
+                preview.appendChild(img);
+            });
+        }
+
+        async function convertImagesToPdf() {
+            if (!selectedImages.length) return alert('Please select at least one image.');
+            const pdfDoc = await PDFLib.PDFDocument.create();
+
+            for (let file of selectedImages) {
+                const buffer = await readFileAsArrayBuffer(file);
+                let image;
+                if (file.type === 'image/jpeg' || file.type === 'image/jpg') {
+                    image = await pdfDoc.embedJpg(buffer);
+                } else if (file.type === 'image/png') {
+                    image = await pdfDoc.embedPng(buffer);
+                } else continue;
+
+                const page = pdfDoc.addPage([image.width, image.height]);
+                page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
+            }
+
+            const pdfBytes = await pdfDoc.save();
+            downloadBlob(pdfBytes, 'images_converted.pdf', 'application/pdf');
+        }
+
+        // 2. MERGE PDF
+        function handleMergeSelect(e) {
+            selectedMergeFiles = Array.from(e.target.files);
+            const list = document.getElementById('merge-list');
+            list.innerHTML = '';
+            selectedMergeFiles.forEach((file, index) => {
+                const li = document.createElement('li');
+                li.className = 'px-4 py-2 text-sm text-slate-700 flex justify-between items-center';
+                li.innerHTML = `<span>${index + 1}. ${file.name}</span> <span class="text-xs text-slate-400">${(file.size / 1024 / 1024).toFixed(2)} MB</span>`;
+                list.appendChild(li);
+            });
+        }
+
+        async function mergePdfs() {
+            if (selectedMergeFiles.length < 2) return alert('Please select at least 2 PDF files to merge.');
+            const mergedPdf = await PDFLib.PDFDocument.create();
+
+            for (let file of selectedMergeFiles) {
+                const buffer = await readFileAsArrayBuffer(file);
+                const pdf = await PDFLib.PDFDocument.load(buffer);
+                const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                copiedPages.forEach(page => mergedPdf.addPage(page));
+            }
+
+            const pdfBytes = await mergedPdf.save();
+            downloadBlob(pdfBytes, 'merged_document.pdf', 'application/pdf');
+        }
+
+        // 3. EXTRACT PAGES
+        function handleSplitSelect(e) {
+            if (e.target.files.length) {
+                selectedSplitFile = e.target.files[0];
+                document.getElementById('split-file-name').innerText = `Selected: ${selectedSplitFile.name}`;
+            }
+        }
+
+        async function extractPdfPages() {
+            if (!selectedSplitFile) return alert('Please upload a PDF file.');
+            const rangeStr = document.getElementById('split-range').value.trim();
+            if (!rangeStr) return alert('Please specify page numbers to extract.');
+
+            const buffer = await readFileAsArrayBuffer(selectedSplitFile);
+            const pdfDoc = await PDFLib.PDFDocument.load(buffer);
+            const totalPages = pdfDoc.getPageCount();
+
+            // Parse ranges like "1, 3-5"
+            const pageIndices = [];
+            const parts = rangeStr.split(',');
+            for (let part of parts) {
+                part = part.trim();
+                if (part.includes('-')) {
+                    const [start, end] = part.split('-').map(Number);
+                    for (let i = start; i <= end; i++) {
+                        if (i >= 1 && i <= totalPages) pageIndices.push(i - 1);
+                    }
+                } else {
+                    const pageNum = Number(part);
+                    if (pageNum >= 1 && pageNum <= totalPages) pageIndices.push(pageNum - 1);
+                }
+            }
+
+            if (!pageIndices.length) return alert('No valid pages found within range.');
+
+            const newPdf = await PDFLib.PDFDocument.create();
+            const copiedPages = await newPdf.copyPages(pdfDoc, pageIndices);
+            copiedPages.forEach(page => newPdf.addPage(page));
+
+            const pdfBytes = await newPdf.save();
+            downloadBlob(pdfBytes, 'extracted_pages.pdf', 'application/pdf');
+        }
+
+        // 4. TEXT TO PDF
+        async function convertTextToPdf() {
+            const text = document.getElementById('text-input').value;
+            if (!text.trim()) return alert('Please enter some text.');
+
+            const pdfDoc = await PDFLib.PDFDocument.create();
+            const page = pdfDoc.addPage([600, 800]);
+            const font = await pdfDoc.embedStandardFont(PDFLib.StandardFonts.Helvetica);
+
+            const fontSize = 12;
+            const margin = 40;
+            const maxWidth = 520;
+            
+            // Basic word wrapping mechanism
+            const lines = [];
+            text.split('\n').forEach(rawLine => {
+                const words = rawLine.split(' ');
+                let currentLine = '';
+                words.forEach(word => {
+                    const testLine = currentLine ? `${currentLine} ${word}` : word;
+                    if (font.widthOfTextAtSize(testLine, fontSize) <= maxWidth) {
+                        currentLine = testLine;
+                    } else {
+                        lines.push(currentLine);
+                        currentLine = word;
+                    }
+                });
+                lines.push(currentLine);
+            });
+
+            let y = 760;
+            lines.forEach(line => {
+                if (y < margin) {
+                    page = pdfDoc.addPage([600, 800]);
+                    y = 760;
+                }
+                page.drawText(line, { x: margin, y, size: fontSize, font });
+                y -= fontSize + 4;
+            });
+
+            const pdfBytes = await pdfDoc.save();
+            downloadBlob(pdfBytes, 'text_document.pdf', 'application/pdf');
+        }
+
+        // 5. HTML TO PDF
+        function convertHtmlToPdf() {
+            const htmlContent = document.getElementById('html-input').value;
+            if (!htmlContent.trim()) return alert('Please enter HTML markup.');
+
+            const target = document.getElementById('html-render-target');
+            target.innerHTML = htmlContent;
+
+            const opt = {
+                margin:       0.5,
+                filename:     'html_document.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(target).save().then(() => {
+                target.innerHTML = '';
+            });
+        }
+
+        // Download Utility
+        function downloadBlob(bytes, filename, mimeType) {
+            const blob = new Blob([bytes], { type: mimeType });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(link.href);
         }
     </script>
 </body>
