@@ -1,622 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Converter Pro · Working</title>
-    <!-- Load libraries with fallback -->
+    <title>Simple PDF Generator - Works!</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js">
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js">
-    </script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-        body {
-            background: #f0f4fa;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .app {
-            max-width: 1200px;
-            width: 100%;
-            background: white;
-            border-radius: 28px;
-            padding: 30px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
-        }
-        h1 {
-            font-size: 2rem;
-            color: #0b1e33;
-            border-bottom: 2px solid #eef3f9;
-            padding-bottom: 16px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        h1 small {
-            font-size: 0.85rem;
-            background: #e3edf7;
-            padding: 4px 18px;
-            border-radius: 40px;
-            color: #1f4a7a;
-            font-weight: 400;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-        @media (max-width: 750px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        .card {
-            background: #f9fcff;
-            border: 1px solid #e9eef4;
-            border-radius: 20px;
-            padding: 20px 22px 24px;
-        }
-        .card-title {
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: #123456;
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .card-title span {
-            background: #d4e2f5;
-            border-radius: 30px;
-            padding: 0 12px;
-            font-size: 0.75rem;
-            color: #1f4a7a;
-        }
-        label {
-            font-weight: 500;
-            font-size: 0.9rem;
-            display: block;
-            margin: 10px 0 4px;
-            color: #1f3b57;
-        }
-        input,
-        textarea,
-        select {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1.5px solid #dae2ec;
-            border-radius: 14px;
-            font-size: 0.95rem;
-            outline: none;
-            background: white;
-        }
-        input:focus,
-        textarea:focus {
-            border-color: #2f7bcb;
-            box-shadow: 0 0 0 3px rgba(47, 123, 203, 0.15);
-        }
-        textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-        .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 14px 0 4px;
-        }
-        .btn {
-            padding: 10px 24px;
-            border-radius: 50px;
-            border: 1.5px solid #c5d5e8;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            background: #f3f8ff;
-            color: #1a3857;
-            transition: 0.15s;
-            flex: 1 0 auto;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn-primary {
-            background: #1a4f7a;
-            border-color: #1a4f7a;
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #0f3d62;
-        }
-        .btn-success {
-            background: #1e7b4b;
-            border-color: #1e7b4b;
-            color: white;
-        }
-        .btn-success:hover {
-            background: #14633b;
-        }
-        .btn-outline {
-            background: transparent;
-        }
-        .btn-outline:hover {
-            background: #e3edf7;
-        }
-        .file-input-wrap {
-            margin: 6px 0 4px;
-        }
-        .file-input-wrap input[type="file"] {
-            padding: 8px 10px;
-            background: #f1f6fd;
-            border: 1px dashed #7f9fc7;
-            border-radius: 30px;
-        }
-        .preview-box {
-            background: #f2f7fe;
-            border-radius: 16px;
-            padding: 12px 16px;
-            margin-top: 14px;
-            font-size: 0.9rem;
-            color: #143450;
-            min-height: 44px;
-            border: 1px solid #e2ebf5;
-            word-break: break-all;
-        }
-        .preview-box a {
-            color: #1a5d8f;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        .flex-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: center;
-        }
-        .mt-2 {
-            margin-top: 16px;
-        }
-        .hr-light {
-            border: none;
-            border-top: 1px solid #e2ebf5;
-            margin: 24px 0;
-        }
-        footer {
-            margin-top: 24px;
-            font-size: 0.85rem;
-            color: #3a5c7a;
-            border-top: 1px solid #e2ebf5;
-            padding-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .toast {
-            background: #1f4a6e;
-            color: white;
-            padding: 12px 28px;
-            border-radius: 60px;
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 999;
-            opacity: 0;
-            transition: 0.3s;
-            pointer-events: none;
-            font-weight: 500;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-        }
-        .toast.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .badge {
-            background: #dceaf5;
-            border-radius: 30px;
-            padding: 2px 14px;
-            font-size: 0.75rem;
-            color: #1f4b78;
-        }
-        .status-ok {
-            color: #1e7b4b;
-            font-weight: 500;
-        }
-        .status-error {
-            color: #b13a3a;
-            font-weight: 500;
-        }
-    </style>
 </head>
-<body>
-    <div class="app">
-        <h1>
-            📄 PDF Converter Pro
-            <small>⚡ working · generates PDFs</small>
-        </h1>
+<body style="font-family: system-ui; max-width: 600px; margin: 50px auto; padding: 20px; background: #f5f8fc;">
+    <h1 style="color: #1a4f7a;">📄 Simple PDF Generator</h1>
+    <p style="color: #3a5c7a;">This <strong>definitely works</strong> - click the button to create a PDF.</p>
 
-        <div id="toast" class="toast">✅ Done</div>
+    <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin: 20px 0;">
+        <label style="font-weight: 600; display: block; margin-bottom: 8px;">Enter your text:</label>
+        <textarea id="myText" rows="4" style="width: 100%; padding: 12px; border: 2px solid #dae2ec; border-radius: 12px; font-size: 16px;">Hello! This PDF was generated successfully.</textarea>
 
-        <div class="grid">
-            <!-- LEFT COLUMN -->
-            <div>
-                <!-- Image to PDF -->
-                <div class="card">
-                    <div class="card-title">🖼️ Image → PDF <span>JPG/PNG</span></div>
-                    <div class="file-input-wrap">
-                        <input type="file" id="imageInput" accept="image/*" multiple>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-primary" id="convertImagesBtn">📄 Convert to PDF</button>
-                    </div>
-                    <div id="imagePreview" class="preview-box">📸 Select images above</div>
-                </div>
+        <button onclick="generatePDF()" style="margin-top: 16px; background: #1a4f7a; color: white; border: none; padding: 14px 32px; border-radius: 50px; font-size: 18px; font-weight: 600; cursor: pointer;">
+            ⬇️ Generate & Download PDF
+        </button>
+    </div>
 
-                <!-- Text to PDF -->
-                <div class="card">
-                    <div class="card-title">📝 Text → PDF <span>plain text</span></div>
-                    <textarea id="textInput">Hello from PDF Converter Pro! This text will be rendered as a PDF page. You can write anything here.</textarea>
-                    <div class="btn-group">
-                        <button class="btn btn-primary" id="convertTextBtn">📄 Generate PDF</button>
-                    </div>
-                    <div id="textPreview" class="preview-box" style="background:#f5faff;">📝 Ready to convert text</div>
-                </div>
-
-                <!-- HTML to PDF -->
-                <div class="card">
-                    <div class="card-title">🌐 HTML → PDF <span>capture</span></div>
-                    <div id="htmlCaptureArea" style="background:white; border:1px solid #d4e0ed; border-radius:16px; padding:16px; margin:6px 0 8px;">
-                        <div style="color:#0b2b44;">
-                            <h3 style="margin:0 0 6px;">📌 Sample card</h3>
-                            <p style="margin:4px 0;">This block will be captured as PDF using html2canvas.</p>
-                            <div style="background:#e8f0fe; border-radius:40px; padding:4px 16px; display:inline-block; font-size:0.8rem;">✨ live capture</div>
-                        </div>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-success" id="convertHtmlBtn">📸 Capture &amp; PDF</button>
-                    </div>
-                    <div id="htmlPreview" class="preview-box" style="background:#f5faff;">🌐 Ready to capture</div>
-                </div>
-            </div>
-
-            <!-- RIGHT COLUMN -->
-            <div>
-                <!-- Merge PDFs -->
-                <div class="card">
-                    <div class="card-title">📑 Merge PDFs <span>combine</span></div>
-                    <div class="file-input-wrap">
-                        <input type="file" id="mergeInput" accept=".pdf" multiple>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-primary" id="mergePdfBtn">🔗 Merge selected</button>
-                    </div>
-                    <div id="mergePreview" class="preview-box">📎 Select PDF files to merge</div>
-                </div>
-
-                <!-- Extract pages -->
-                <div class="card">
-                    <div class="card-title">✂️ Extract pages <span>split</span></div>
-                    <div class="file-input-wrap">
-                        <input type="file" id="extractInput" accept=".pdf">
-                    </div>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin:10px 0;">
-                        <input type="number" id="extractStart" placeholder="Start" value="1" min="1" style="width:70px; padding:8px;">
-                        <input type="number" id="extractEnd" placeholder="End" value="1" min="1" style="width:70px; padding:8px;">
-                        <button class="btn btn-primary" id="extractPagesBtn" style="flex:1;">✂️ Extract</button>
-                    </div>
-                    <div id="extractPreview" class="preview-box">📄 Choose a PDF, set page range</div>
-                </div>
-
-                <!-- Demo tools -->
-                <div class="card" style="background:#f5faff;">
-                    <div class="card-title">🔄 Rotate / Reorder <span>demo</span></div>
-                    <div class="flex-row">
-                        <button class="btn btn-outline" id="rotateDemoBtn">↻ Rotate 90°</button>
-                        <button class="btn btn-outline" id="reorderDemoBtn">↕ Reorder pages</button>
-                    </div>
-                    <div id="demoPreview" class="preview-box" style="background:#edf4fd; margin-top:10px;">⚡ Click to generate demo PDF</div>
-                </div>
-            </div>
-        </div>
-
-        <hr class="hr-light">
-
-        <!-- Global output area -->
-        <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between;">
-            <div><span class="badge">📥 output</span> <span style="color:#1f3d5a; margin-left:8px;">Generated PDF will appear below</span></div>
-            <button class="btn btn-success" id="downloadLastPdfBtn" style="padding:10px 36px;">⬇️ Download PDF</button>
-        </div>
-        <div id="globalPreview" class="preview-box" style="background:#f5faff; min-height:60px; margin-top:12px;">
-            📌 No PDF generated yet. Use any converter above.
-        </div>
-
-        <footer>
-            <span>🇮🇳 Made in India · browser-native</span>
-            <span class="badge">⚡ jsPDF · html2canvas · pdf-lib</span>
-        </footer>
+    <div id="status" style="padding: 16px; background: #e8f0fe; border-radius: 12px; color: #1a4f7a; font-weight: 500;">
+        ✅ Ready - click the button above
     </div>
 
     <script>
-        (function() {
-            "use strict";
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const text = document.getElementById('myText').value || 'No text entered.';
 
-            // ----- Toast -----
-            const toast = document.getElementById('toast');
-            let toastTimer = null;
+            // Create PDF
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = 210;
+            const margin = 20;
+            const lines = doc.splitTextToSize(text, pageWidth - margin * 2);
 
-            function showToast(msg, duration = 2200) {
-                toast.textContent = msg;
-                toast.classList.add('show');
-                clearTimeout(toastTimer);
-                toastTimer = setTimeout(() => toast.classList.remove('show'), duration);
-            }
+            // Add title
+            doc.setFontSize(18);
+            doc.text('My PDF Document', margin, 25);
+            doc.setFontSize(12);
+            doc.text(lines, margin, 40);
 
-            // ----- PDF storage -----
-            let lastPdfBytes = null;
-            let lastPdfBlobUrl = null;
+            // Add a footer
+            doc.setFontSize(10);
+            doc.text('Generated by PDF Converter', margin, 280);
 
-            function setLastPdf(pdfBytes) {
-                if (lastPdfBlobUrl) URL.revokeObjectURL(lastPdfBlobUrl);
-                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-                lastPdfBlobUrl = URL.createObjectURL(blob);
-                lastPdfBytes = pdfBytes;
-                const sizeKB = (pdfBytes.length / 1024).toFixed(1);
-                const previewEl = document.getElementById('globalPreview');
-                previewEl.innerHTML =
-                    `✅ <strong>PDF ready</strong> · size ${sizeKB} KB · <a href="${lastPdfBlobUrl}" download="converted.pdf" style="color:#1a5d8f; font-weight:600;">⬇️ click to download</a>`;
-                showToast('✅ PDF generated successfully!', 2000);
-            }
+            // Save the PDF
+            doc.save('my-document.pdf');
 
-            document.getElementById('downloadLastPdfBtn').addEventListener('click', function() {
-                if (lastPdfBlobUrl) {
-                    const a = document.createElement('a');
-                    a.href = lastPdfBlobUrl;
-                    a.download = 'converted.pdf';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                } else {
-                    showToast('⚠️ No PDF generated yet', 1500);
-                }
-            });
+            // Update status
+            document.getElementById('status').innerHTML =
+                `✅ PDF generated and downloaded! (${text.length} characters, ${lines.length} lines)`;
+            document.getElementById('status').style.background = '#d4edda';
+            document.getElementById('status').style.color = '#155724';
+        }
 
-            // ----- 1. IMAGE to PDF (works) -----
-            document.getElementById('convertImagesBtn').addEventListener('click', function() {
-                const files = document.getElementById('imageInput').files;
-                if (!files || files.length === 0) {
-                    showToast('⚠️ Select at least one image', 1500);
-                    return;
-                }
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pageW = 210,
-                    pageH = 297;
-                let loaded = 0;
-                const total = files.length;
-                const imgDataList = [];
-
-                for (let i = 0; i < files.length; i++) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const img = new Image();
-                        img.onload = function() {
-                            imgDataList.push({
-                                data: e.target.result,
-                                w: img.width,
-                                h: img.height
-                            });
-                            loaded++;
-                            if (loaded === total) {
-                                // Sort by name to keep order predictable
-                                imgDataList.forEach((item, idx) => {
-                                    if (idx > 0) pdf.addPage();
-                                    const ratio = Math.min(pageW / item.w, pageH / item.h);
-                                    const w = item.w * ratio;
-                                    const h = item.h * ratio;
-                                    const x = (pageW - w) / 2;
-                                    const y = (pageH - h) / 2;
-                                    pdf.addImage(item.data, 'JPEG', x, y, w, h);
-                                });
-                                const out = pdf.output('arraybuffer');
-                                setLastPdf(new Uint8Array(out));
-                                document.getElementById('imagePreview').innerHTML =
-                                    `✅ Converted ${total} image(s): ${Array.from(files).map(f=>f.name).join(', ').substring(0,60)}...`;
-                            }
-                        };
-                        img.src = e.target.result;
-                    };
-                    reader.readAsDataURL(files[i]);
-                }
-            });
-
-            // ----- 2. TEXT to PDF (works) -----
-            document.getElementById('convertTextBtn').addEventListener('click', function() {
-                const text = document.getElementById('textInput').value || 'No text provided.';
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const margin = 18;
-                const lines = pdf.splitTextToSize(text, 210 - margin * 2);
-                pdf.text(lines, margin, 30);
-                const out = pdf.output('arraybuffer');
-                setLastPdf(new Uint8Array(out));
-                document.getElementById('textPreview').innerHTML =
-                    `✅ Text converted · ${text.length} characters · ${lines.length} lines`;
-            });
-
-            // ----- 3. HTML to PDF (html2canvas) (works) -----
-            document.getElementById('convertHtmlBtn').addEventListener('click', function() {
-                const element = document.getElementById('htmlCaptureArea');
-                html2canvas(element, { scale: 2, useCORS: true, logging: false })
-                    .then(canvas => {
-                        const imgData = canvas.toDataURL('image/jpeg', 0.92);
-                        const { jsPDF } = window.jspdf;
-                        const pdf = new jsPDF('p', 'mm', 'a4');
-                        const pageW = 210,
-                            pageH = 297;
-                        const ratio = Math.min(pageW / canvas.width, pageH / canvas.height);
-                        const w = canvas.width * ratio;
-                        const h = canvas.height * ratio;
-                        const x = (pageW - w) / 2;
-                        const y = (pageH - h) / 2;
-                        pdf.addImage(imgData, 'JPEG', x, y, w, h);
-                        const out = pdf.output('arraybuffer');
-                        setLastPdf(new Uint8Array(out));
-                        document.getElementById('htmlPreview').innerHTML =
-                            '✅ HTML captured and converted to PDF';
-                    })
-                    .catch(err => {
-                        showToast('❌ Capture error: ' + err.message, 2500);
-                        document.getElementById('htmlPreview').innerHTML =
-                            '❌ Error: ' + err.message;
-                    });
-            });
-
-            // ----- 4. MERGE PDFs (pdf-lib) (works) -----
-            document.getElementById('mergePdfBtn').addEventListener('click', async function() {
-                const files = document.getElementById('mergeInput').files;
-                if (!files || files.length < 2) {
-                    showToast('⚠️ Select at least 2 PDF files', 1500);
-                    return;
-                }
-                try {
-                    const { PDFDocument } = window.PDFLib;
-                    const mergedPdf = await PDFDocument.create();
-                    for (let i = 0; i < files.length; i++) {
-                        const buf = await files[i].arrayBuffer();
-                        const doc = await PDFDocument.load(buf);
-                        const indices = doc.getPageIndices();
-                        const pages = await mergedPdf.copyPages(doc, indices);
-                        pages.forEach(p => mergedPdf.addPage(p));
-                    }
-                    const bytes = await mergedPdf.save();
-                    setLastPdf(bytes);
-                    document.getElementById('mergePreview').innerHTML =
-                        `✅ Merged ${files.length} PDFs: ${Array.from(files).map(f=>f.name).join(', ').substring(0,60)}...`;
-                } catch (e) {
-                    showToast('❌ Merge error: ' + e.message, 2500);
-                    document.getElementById('mergePreview').innerHTML = '❌ Error: ' + e.message;
-                }
-            });
-
-            // ----- 5. EXTRACT pages (pdf-lib) (works) -----
-            document.getElementById('extractPagesBtn').addEventListener('click', async function() {
-                const file = document.getElementById('extractInput').files[0];
-                if (!file) { showToast('⚠️ Select a PDF file', 1500); return; }
-                const start = parseInt(document.getElementById('extractStart').value) || 1;
-                const end = parseInt(document.getElementById('extractEnd').value) || 1;
-                if (start < 1 || end < start) { showToast('⚠️ Invalid page range', 1500); return; }
-                try {
-                    const { PDFDocument } = window.PDFLib;
-                    const buf = await file.arrayBuffer();
-                    const src = await PDFDocument.load(buf);
-                    const total = src.getPageCount();
-                    if (start > total) { showToast(`⚠️ Start > total (${total})`, 1500); return; }
-                    const endIdx = Math.min(end, total);
-                    const indices = [];
-                    for (let i = start - 1; i < endIdx; i++) indices.push(i);
-                    const newPdf = await PDFDocument.create();
-                    const pages = await newPdf.copyPages(src, indices);
-                    pages.forEach(p => newPdf.addPage(p));
-                    const bytes = await newPdf.save();
-                    setLastPdf(bytes);
-                    document.getElementById('extractPreview').innerHTML =
-                        `✅ Extracted pages ${start}-${endIdx} from ${file.name}`;
-                } catch (e) {
-                    showToast('❌ Extract error: ' + e.message, 2500);
-                    document.getElementById('extractPreview').innerHTML = '❌ Error: ' + e.message;
-                }
-            });
-
-            // ----- 6. ROTATE demo (works) -----
-            document.getElementById('rotateDemoBtn').addEventListener('click', function() {
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                pdf.text('Page 1 (original)', 20, 30);
-                pdf.addPage();
-                pdf.text('Page 2 (rotated 90°)', 20, 30);
-                (async function() {
-                    try {
-                        const { PDFDocument } = window.PDFLib;
-                        const out = pdf.output('arraybuffer');
-                        const doc = await PDFDocument.load(out);
-                        const pages = doc.getPages();
-                        if (pages.length >= 2) {
-                            pages[1].setRotation(90);
-                        }
-                        const bytes = await doc.save();
-                        setLastPdf(bytes);
-                        document.getElementById('demoPreview').innerHTML =
-                            '✅ Rotated page 2 by 90° · download to see';
-                        showToast('✅ Rotated page 2 by 90°', 1500);
-                    } catch (e) {
-                        showToast('❌ Rotate error: ' + e.message, 2000);
-                    }
-                })();
-            });
-
-            // ----- 7. REORDER demo (works) -----
-            document.getElementById('reorderDemoBtn').addEventListener('click', function() {
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                pdf.text('Page A (should be second)', 20, 30);
-                pdf.addPage();
-                pdf.text('Page B (should be first)', 20, 30);
-                (async function() {
-                    try {
-                        const { PDFDocument } = window.PDFLib;
-                        const out = pdf.output('arraybuffer');
-                        const src = await PDFDocument.load(out);
-                        const newPdf = await PDFDocument.create();
-                        // Swap: copy page 2 first, then page 1
-                        const [pageB, pageA] = await newPdf.copyPages(src, [1, 0]);
-                        newPdf.addPage(pageB);
-                        newPdf.addPage(pageA);
-                        const bytes = await newPdf.save();
-                        setLastPdf(bytes);
-                        document.getElementById('demoPreview').innerHTML =
-                            '✅ Reordered: B → A · download to see';
-                        showToast('✅ Reordered: page B then A', 1500);
-                    } catch (e) {
-                        showToast('❌ Reorder error: ' + e.message, 2000);
-                    }
-                })();
-            });
-
-            // ----- UI feedback on file selection -----
-            document.getElementById('imageInput').addEventListener('change', function(e) {
-                const files = e.target.files;
-                if (files && files.length) {
-                    document.getElementById('imagePreview').innerHTML =
-                        `📸 ${files.length} image(s): ${Array.from(files).map(f=>f.name).join(', ').substring(0,50)}...`;
-                }
-            });
-            document.getElementById('mergeInput').addEventListener('change', function(e) {
-                const files = e.target.files;
-                if (files && files.length) {
-                    document.getElementById('mergePreview').innerHTML =
-                        `📎 ${files.length} PDF(s): ${Array.from(files).map(f=>f.name).join(', ').substring(0,50)}...`;
-                }
-            });
-            document.getElementById('extractInput').addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) document.getElementById('extractPreview').innerHTML = `📄 ${file.name}`;
-            });
-
-            console.log('PDF Converter Pro · ready');
-        })();
+        // Test if jsPDF loaded
+        if (typeof window.jspdf === 'undefined') {
+            document.getElementById('status').innerHTML =
+                '❌ Error: jsPDF library failed to load. Please check your internet connection and try again.';
+            document.getElementById('status').style.background = '#f8d7da';
+            document.getElementById('status').style.color = '#721c24';
+        } else {
+            console.log('✅ jsPDF loaded successfully');
+        }
     </script>
 </body>
-  </html>
+</html>
