@@ -1,596 +1,482 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
-  <title>PDF Converter Pro · Single HTML</title>
-  <!-- Load required libraries from CDN (jsPDF, html2canvas, pdf-lib) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
-    }
-    body {
-      background: #f0f4fa;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-    }
-    .app-wrapper {
-      max-width: 1300px;
-      width: 100%;
-      background: white;
-      border-radius: 32px;
-      box-shadow: 0 20px 60px rgba(0,20,40,0.12);
-      padding: 28px 30px 40px;
-      transition: all 0.2s;
-      margin: 10px 0;
-    }
-    h1 {
-      font-size: 2.1rem;
-      font-weight: 600;
-      letter-spacing: -0.5px;
-      color: #0b1e33;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      border-bottom: 2px solid #eef3f9;
-      padding-bottom: 18px;
-      margin-bottom: 28px;
-    }
-    h1 small {
-      font-size: 0.9rem;
-      font-weight: 400;
-      color: #2c6b9e;
-      margin-left: 8px;
-      background: #e3edf7;
-      padding: 4px 16px;
-      border-radius: 30px;
-      letter-spacing: 0.3px;
-    }
-    .grid-2col {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 28px;
-    }
-    @media (max-width: 780px) {
-      .grid-2col { grid-template-columns: 1fr; gap: 30px; }
-      .app-wrapper { padding: 18px 16px; }
-    }
-    .card {
-      background: #f9fcff;
-      border-radius: 24px;
-      padding: 22px 20px 26px;
-      border: 1px solid #e9eef4;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-      transition: 0.15s;
-    }
-    .card:hover { border-color: #cbdae9; }
-    .card-title {
-      font-weight: 600;
-      font-size: 1.2rem;
-      color: #123456;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 18px;
-    }
-    .card-title span {
-      background: #d4e2f5;
-      border-radius: 30px;
-      padding: 0 12px;
-      font-size: 0.8rem;
-      color: #1f4a7a;
-    }
-    label {
-      font-weight: 500;
-      font-size: 0.9rem;
-      color: #1f3b57;
-      display: block;
-      margin: 12px 0 4px;
-    }
-    input, textarea, select {
-      width: 100%;
-      padding: 12px 14px;
-      background: white;
-      border: 1.5px solid #dae2ec;
-      border-radius: 16px;
-      font-size: 0.95rem;
-      transition: 0.15s;
-      outline: none;
-    }
-    input:focus, textarea:focus, select:focus {
-      border-color: #2f7bcb;
-      box-shadow: 0 0 0 3px rgba(47,123,203,0.15);
-    }
-    textarea { min-height: 90px; resize: vertical; }
-    .btn-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin: 18px 0 6px;
-    }
-    .btn {
-      background: white;
-      border: 1.5px solid #c5d5e8;
-      padding: 10px 22px;
-      border-radius: 50px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: #1a3857;
-      cursor: pointer;
-      transition: 0.15s;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: #f3f8ff;
-      flex: 1 0 auto;
-      justify-content: center;
-    }
-    .btn-primary {
-      background: #1a4f7a;
-      border-color: #1a4f7a;
-      color: white;
-    }
-    .btn-primary:hover { background: #0f3d62; border-color: #0f3d62; }
-    .btn-success {
-      background: #1e7b4b;
-      border-color: #1e7b4b;
-      color: white;
-    }
-    .btn-success:hover { background: #14633b; }
-    .btn-outline { background: transparent; }
-    .btn-outline:hover { background: #e3edf7; }
-    .btn:active { transform: scale(0.96); }
-    .file-input-wrap {
-      position: relative;
-      margin: 10px 0 4px;
-    }
-    .file-input-wrap input[type="file"] {
-      padding: 10px 8px;
-      background: #f1f6fd;
-      border-radius: 30px;
-      border: 1px dashed #7f9fc7;
-    }
-    .preview-box {
-      background: white;
-      border-radius: 20px;
-      padding: 14px 16px;
-      margin-top: 20px;
-      border: 1px solid #dce6f0;
-      max-height: 200px;
-      overflow-y: auto;
-      font-size: 0.9rem;
-      color: #143450;
-    }
-    .preview-box p { margin: 4px 0; }
-    .badge {
-      background: #dceaf5;
-      border-radius: 30px;
-      padding: 2px 12px;
-      font-size: 0.75rem;
-      color: #1f4b78;
-    }
-    .flex-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      align-items: center;
-    }
-    .mt-2 { margin-top: 16px; }
-    .mb-1 { margin-bottom: 8px; }
-    .hr-light { border: none; border-top: 1px solid #e2ebf5; margin: 20px 0; }
-    footer {
-      margin-top: 30px;
-      font-size: 0.85rem;
-      text-align: center;
-      color: #3a5c7a;
-      border-top: 1px solid #e2ebf5;
-      padding-top: 22px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .footer-badge {
-      background: #e6effa;
-      padding: 4px 16px;
-      border-radius: 40px;
-      font-weight: 500;
-    }
-    .toast-message {
-      background: #1f4a6e;
-      color: white;
-      padding: 12px 22px;
-      border-radius: 60px;
-      font-weight: 500;
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 999;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-      transition: 0.3s;
-      opacity: 0;
-      pointer-events: none;
-      white-space: nowrap;
-    }
-    .toast-message.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .inline-icon { font-size: 1.2rem; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Converter Pro Studio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PDF-Lib for Core Operations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <!-- HTML2PDF.js for Render Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .active-tab {
+            background-color: #f1f5f9;
+            color: #2563eb;
+            font-weight: 600;
+            border-left: 4px solid #2563eb;
+        }
+        .drag-over {
+            border-color: #2563eb !important;
+            background-color: #eff6ff !important;
+        }
+    </style>
 </head>
-<body>
-  <div class="app-wrapper">
-    <h1>
-      📄 PDF Converter Pro
-      <small>⚡ browser · offline-ready</small>
-    </h1>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col font-sans">
 
-    <!-- Toast notification -->
-    <div id="toast" class="toast-message">✅ Done</div>
-
-    <div class="grid-2col">
-      <!-- ========== LEFT COLUMN: Converters ========== -->
-      <div>
-        <!-- IMAGE to PDF -->
-        <div class="card">
-          <div class="card-title">🖼️ Image → PDF <span>JPG/PNG</span></div>
-          <div class="file-input-wrap">
-            <input type="file" id="imageInput" accept="image/*" multiple>
-          </div>
-          <div class="btn-group">
-            <button class="btn btn-primary" id="convertImagesBtn">📄 Convert to PDF</button>
-          </div>
-          <div id="imagePreview" class="preview-box" style="max-height:100px; margin-top:10px; background:#f2f7fe;"><span style="color:#4a6b8a;">📸 selected images appear here</span></div>
-        </div>
-
-        <!-- TEXT to PDF -->
-        <div class="card">
-          <div class="card-title">📝 Text → PDF <span>plain or HTML</span></div>
-          <textarea id="textInput" placeholder="Paste your text or HTML content here...">Hello from PDF Converter Pro! This text will be rendered as a PDF page.</textarea>
-          <div class="btn-group">
-            <button class="btn btn-primary" id="convertTextBtn">📄 Generate PDF</button>
-          </div>
-        </div>
-
-        <!-- HTML to PDF (via html2canvas) -->
-        <div class="card">
-          <div class="card-title">🌐 HTML → PDF <span>capture</span></div>
-          <div id="htmlCaptureArea" style="background:white; border:1px solid #d4e0ed; border-radius:18px; padding:16px; margin:8px 0 8px;">
-            <div style="font-family:system-ui; color:#0b2b44;">
-              <h3 style="margin:0 0 6px;">📌 Sample card</h3>
-              <p style="margin:4px 0;">This block will be captured as PDF using html2canvas.</p>
-              <div style="background:#e8f0fe; border-radius:40px; padding:4px 16px; display:inline-block; font-size:0.8rem;">✨ live capture</div>
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 text-white p-2 rounded-xl flex items-center justify-center shadow-md shadow-blue-500/20">
+                    <i data-lucide="file-text" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-900 leading-none">PDF Pro Studio</h1>
+                    <span class="text-xs text-slate-500">Client-Side Engine</span>
+                </div>
             </div>
-          </div>
-          <div class="btn-group">
-            <button class="btn btn-success" id="convertHtmlBtn">📸 Capture & PDF</button>
-          </div>
+            <div class="flex items-center space-x-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    100% Offline & Private
+                </span>
+            </div>
         </div>
-      </div>
+    </header>
 
-      <!-- ========== RIGHT COLUMN: Merge + Extract ========== -->
-      <div>
-        <!-- MERGE PDFs -->
-        <div class="card">
-          <div class="card-title">📑 Merge PDFs <span>combine</span></div>
-          <div class="file-input-wrap">
-            <input type="file" id="mergeInput" accept=".pdf" multiple>
-          </div>
-          <div class="btn-group">
-            <button class="btn btn-primary" id="mergePdfBtn">🔗 Merge selected</button>
-          </div>
-          <div id="mergePreview" class="preview-box" style="max-height:70px; background:#f2f7fe;"><span style="color:#4a6b8a;">📎 PDF files selected</span></div>
-        </div>
+    <!-- Main Workspace -->
+    <div class="max-w-7xl mx-auto px-6 py-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="lg:col-span-3 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm h-fit">
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-3">PDF Utilities</p>
+            <nav class="space-y-1">
+                <button onclick="switchTab('images-to-pdf')" id="tab-images-to-pdf" class="active-tab w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition">
+                    <i data-lucide="image" class="w-4 h-4"></i> Images to PDF
+                </button>
+                <button onclick="switchTab('merge-pdf')" id="tab-merge-pdf" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition">
+                    <i data-lucide="files" class="w-4 h-4"></i> Merge PDFs
+                </button>
+                <button onclick="switchTab('extract-pdf')" id="tab-extract-pdf" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition">
+                    <i data-lucide="scissors" class="w-4 h-4"></i> Extract / Split Pages
+                </button>
+                <button onclick="switchTab('rotate-pdf')" id="tab-rotate-pdf" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition">
+                    <i data-lucide="rotate-cw" class="w-4 h-4"></i> Rotate Pages
+                </button>
+                <button onclick="switchTab('text-to-pdf')" id="tab-text-to-pdf" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition">
+                    <i data-lucide="align-left" class="w-4 h-4"></i> Text to PDF
+                </button>
+                <button onclick="switchTab('html-to-pdf')" id="tab-html-to-pdf" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition">
+                    <i data-lucide="code" class="w-4 h-4"></i> HTML to PDF
+                </button>
+            </nav>
+        </aside>
 
-        <!-- EXTRACT pages from PDF -->
-        <div class="card">
-          <div class="card-title">✂️ Extract pages <span>split</span></div>
-          <div class="file-input-wrap">
-            <input type="file" id="extractInput" accept=".pdf">
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; margin:10px 0;">
-            <input type="number" id="extractStart" placeholder="Start page" value="1" min="1" style="width:80px; padding:8px;">
-            <input type="number" id="extractEnd" placeholder="End page" value="1" min="1" style="width:80px; padding:8px;">
-            <button class="btn btn-primary" id="extractPagesBtn" style="flex:1;">✂️ Extract</button>
-          </div>
-          <div id="extractPreview" class="preview-box" style="max-height:50px; background:#f2f7fe;"><span style="color:#4a6b8a;">📄 choose PDF, set range</span></div>
-        </div>
+        <!-- Tool Panels -->
+        <main class="lg:col-span-9 bg-white rounded-2xl border border-slate-200 p-8 shadow-sm min-h-[500px] flex flex-col justify-between">
+            
+            <div id="panel-container">
+                
+                <!-- 1. IMAGES TO PDF -->
+                <section id="panel-images-to-pdf" class="space-y-6">
+                    <div class="border-b border-slate-100 pb-4">
+                        <h2 class="text-xl font-bold text-slate-900">Convert Images to PDF</h2>
+                        <p class="text-sm text-slate-500">Combine PNG, JPG, or WebP images into a formatted PDF file.</p>
+                    </div>
 
-        <!-- Rotate / Reorder (demo) + extra utility -->
-        <div class="card" style="background:#f5faff;">
-          <div class="card-title">🔄 Rotate / Reorder <span>quick</span></div>
-          <div class="flex-row">
-            <button class="btn btn-outline" id="rotateDemoBtn">↻ Rotate 90° (demo)</button>
-            <button class="btn btn-outline" id="reorderDemoBtn">↕ Reorder pages (demo)</button>
-          </div>
-          <div style="font-size:0.85rem; color:#2d577b; margin-top:12px; background:#e9f0f9; border-radius:30px; padding:4px 18px; display:inline-block;">
-            ⚡ demo uses generated sample PDF
-          </div>
-        </div>
-      </div>
+                    <div id="drop-zone-img" class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer">
+                        <input type="file" id="img-input" multiple accept="image/png, image/jpeg, image/webp" class="hidden" onchange="handleImageSelect(event)">
+                        <label for="img-input" class="cursor-pointer space-y-3 block">
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto">
+                                <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-700">Click or drag & drop images here</p>
+                                <p class="text-xs text-slate-400 mt-1">Supports PNG, JPG, and WebP</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div id="img-preview" class="grid grid-cols-2 sm:grid-cols-4 gap-4 max-h-60 overflow-y-auto p-1"></div>
+                </section>
+
+                <!-- 2. MERGE PDF -->
+                <section id="panel-merge-pdf" class="space-y-6 hidden">
+                    <div class="border-b border-slate-100 pb-4">
+                        <h2 class="text-xl font-bold text-slate-900">Merge Multiple PDFs</h2>
+                        <p class="text-sm text-slate-500">Combine multiple PDF files into one continuous document.</p>
+                    </div>
+
+                    <div id="drop-zone-merge" class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer">
+                        <input type="file" id="merge-input" multiple accept="application/pdf" class="hidden" onchange="handleMergeSelect(event)">
+                        <label for="merge-input" class="cursor-pointer space-y-3 block">
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto">
+                                <i data-lucide="files" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-700">Select PDF files to merge</p>
+                                <p class="text-xs text-slate-400 mt-1">Order files in the sequence you want them combined</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <ul id="merge-list" class="space-y-2 max-h-60 overflow-y-auto"></ul>
+                </section>
+
+                <!-- 3. EXTRACT PAGES -->
+                <section id="panel-extract-pdf" class="space-y-6 hidden">
+                    <div class="border-b border-slate-100 pb-4">
+                        <h2 class="text-xl font-bold text-slate-900">Extract Pages</h2>
+                        <p class="text-sm text-slate-500">Extract specific pages or page ranges into a new PDF file.</p>
+                    </div>
+
+                    <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer">
+                        <input type="file" id="extract-input" accept="application/pdf" class="hidden" onchange="handleExtractSelect(event)">
+                        <label for="extract-input" class="cursor-pointer space-y-3 block">
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto">
+                                <i data-lucide="file-plus" class="w-6 h-6"></i>
+                            </div>
+                            <p id="extract-file-name" class="font-semibold text-slate-700">Upload PDF File</p>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Page Selection Range:</label>
+                        <input type="text" id="extract-range" placeholder="e.g. 1, 3-5, 8" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <p class="text-xs text-slate-400 mt-1.5">Use commas for specific pages and hyphens for page ranges.</p>
+                    </div>
+                </section>
+
+                <!-- 4. ROTATE PDF -->
+                <section id="panel-rotate-pdf" class="space-y-6 hidden">
+                    <div class="border-b border-slate-100 pb-4">
+                        <h2 class="text-xl font-bold text-slate-900">Rotate PDF Pages</h2>
+                        <p class="text-sm text-slate-500">Rotate all pages in a document clockwise by standard increments.</p>
+                    </div>
+
+                    <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer">
+                        <input type="file" id="rotate-input" accept="application/pdf" class="hidden" onchange="handleRotateSelect(event)">
+                        <label for="rotate-input" class="cursor-pointer space-y-3 block">
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto">
+                                <i data-lucide="rotate-cw" class="w-6 h-6"></i>
+                            </div>
+                            <p id="rotate-file-name" class="font-semibold text-slate-700">Upload PDF File to Rotate</p>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Rotation Angle:</label>
+                        <select id="rotate-angle" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <option value="90">90° Clockwise</option>
+                            <option value="180">180° Flip</option>
+                            <option value="270">270° Counter-Clockwise</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- 5. TEXT TO PDF -->
+                <section id="panel-text-to-pdf" class="space-y-6 hidden">
+                    <div class="border-b border-slate-100 pb-4">
+                        <h2 class="text-xl font-bold text-slate-900">Convert Text to PDF</h2>
+                        <p class="text-sm text-slate-500">Render standard plain text directly into a PDF document.</p>
+                    </div>
+
+                    <textarea id="text-input" rows="8" placeholder="Type or paste your content here..." class="w-full border border-slate-300 rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                </section>
+
+                <!-- 6. HTML TO PDF -->
+                <section id="panel-html-to-pdf" class="space-y-6 hidden">
+                    <div class="border-b border-slate-100 pb-4">
+                        <h2 class="text-xl font-bold text-slate-900">Convert HTML to PDF</h2>
+                        <p class="text-sm text-slate-500">Render raw HTML code into a formatted PDF file.</p>
+                    </div>
+
+                    <textarea id="html-input" rows="8" placeholder="<h1>Document Title</h1><p>Body paragraph...</p>" class="w-full border border-slate-300 rounded-xl p-4 text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                    <div id="html-render-target" class="hidden"></div>
+                </section>
+
+            </div>
+
+            <!-- Action Bar -->
+            <div class="pt-6 border-t border-slate-100 flex items-center justify-between mt-6">
+                <span id="status-text" class="text-xs text-slate-400 font-medium">Ready</span>
+                <button onclick="executeAction()" id="process-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition flex items-center gap-2 shadow-md shadow-blue-500/10">
+                    <i data-lucide="download" class="w-4 h-4"></i> Generate PDF
+                </button>
+            </div>
+
+        </main>
     </div>
 
-    <!-- divider -->
-    <hr class="hr-light">
+    <script>
+        // State Management
+        let currentTab = 'images-to-pdf';
+        let selectedImages = [];
+        let selectedMergeFiles = [];
+        let selectedExtractFile = null;
+        let selectedRotateFile = null;
 
-    <!-- preview & download area (unified) -->
-    <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:center; justify-content:space-between;">
-      <div><span class="badge">📥 output ready</span> <span style="color:#1f3d5a; margin-left:8px;">Use any converter above to generate PDF</span></div>
-      <button class="btn btn-success" id="downloadLastPdfBtn" style="padding:10px 32px;">⬇️ Download last PDF</button>
-    </div>
-    <div id="globalPreview" class="preview-box" style="margin-top:12px; background:#f5faff; min-height:50px;">
-      <span style="color:#3b688b;">📌 PDF preview / info will appear here</span>
-    </div>
+        // Initialize Lucide Icons
+        lucide.createIcons();
 
-    <footer>
-      <span>🇮🇳 Made in India · browser-native</span>
-      <span class="footer-badge">⚡ jsPDF · html2canvas · pdf-lib</span>
-    </footer>
-  </div>
+        // Tab Navigation Switcher
+        function switchTab(tabId) {
+            currentTab = tabId;
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-tab'));
+            document.querySelectorAll('#panel-container > section').forEach(panel => panel.classList.add('hidden'));
 
-  <script>
-    (function() {
-      "use strict";
-
-      // ---------- helpers ----------
-      const toast = document.getElementById('toast');
-      let toastTimeout = null;
-      function showToast(msg, duration = 2500) {
-        toast.textContent = msg;
-        toast.classList.add('show');
-        clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => toast.classList.remove('show'), duration);
-      }
-
-      // store last generated PDF as ArrayBuffer (or Uint8Array) and blob URL
-      let lastPdfData = null;          // Uint8Array
-      let lastPdfBlobUrl = null;
-
-      function setLastPdf(pdfBytes, mimeType = 'application/pdf') {
-        if (lastPdfBlobUrl) URL.revokeObjectURL(lastPdfBlobUrl);
-        const blob = new Blob([pdfBytes], { type: mimeType });
-        lastPdfBlobUrl = URL.createObjectURL(blob);
-        lastPdfData = pdfBytes;
-        document.getElementById('globalPreview').innerHTML = `✅ PDF ready · size ${(pdfBytes.length / 1024).toFixed(1)} KB · <a href="${lastPdfBlobUrl}" download="converted.pdf" style="color:#1a5d8f;">⬇️ download</a>`;
-        showToast('PDF generated successfully', 1800);
-      }
-
-      // download last PDF
-      document.getElementById('downloadLastPdfBtn').addEventListener('click', function() {
-        if (lastPdfBlobUrl) {
-          const a = document.createElement('a');
-          a.href = lastPdfBlobUrl;
-          a.download = 'converted.pdf';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        } else {
-          showToast('No PDF generated yet', 1500);
+            document.getElementById(`tab-${tabId}`).classList.add('active-tab');
+            document.getElementById(`panel-${tabId}`).classList.remove('hidden');
+            setStatus('Ready');
         }
-      });
 
-      // ---------- 1. IMAGE to PDF ----------
-      document.getElementById('convertImagesBtn').addEventListener('click', function() {
-        const files = document.getElementById('imageInput').files;
-        if (!files || files.length === 0) { showToast('Select at least one image', 1500); return; }
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const width = 210, height = 297;
-        let loaded = 0;
-        const total = files.length;
-        const imgArray = [];
-
-        for (let i = 0; i < files.length; i++) {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-              const imgData = e.target.result;
-              imgArray.push({ img, data: imgData });
-              loaded++;
-              if (loaded === total) {
-                // all images loaded, add to pdf
-                imgArray.forEach((item, idx) => {
-                  if (idx > 0) pdf.addPage();
-                  const imgW = item.img.width, imgH = item.img.height;
-                  const ratio = Math.min(width / imgW, height / imgH);
-                  const w = imgW * ratio, h = imgH * ratio;
-                  const x = (width - w) / 2, y = (height - h) / 2;
-                  pdf.addImage(item.data, 'JPEG', x, y, w, h);
-                });
-                const out = pdf.output('arraybuffer');
-                setLastPdf(new Uint8Array(out));
-              }
-            };
-            img.src = e.target.result;
-          };
-          reader.readAsDataURL(files[i]);
+        function setStatus(msg) {
+            document.getElementById('status-text').innerText = msg;
         }
-        // show preview
-        let names = Array.from(files).map(f => f.name).join(', ');
-        document.getElementById('imagePreview').innerHTML = `📸 ${files.length} image(s): ${names.substring(0,60)}${names.length>60?'…':''}`;
-      });
 
-      // ---------- 2. TEXT to PDF ----------
-      document.getElementById('convertTextBtn').addEventListener('click', function() {
-        const text = document.getElementById('textInput').value || 'No text provided.';
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pageWidth = 210, margin = 18;
-        const lines = pdf.splitTextToSize(text, pageWidth - margin * 2);
-        pdf.text(lines, margin, 30);
-        const out = pdf.output('arraybuffer');
-        setLastPdf(new Uint8Array(out));
-      });
-
-      // ---------- 3. HTML to PDF (html2canvas) ----------
-      document.getElementById('convertHtmlBtn').addEventListener('click', function() {
-        const element = document.getElementById('htmlCaptureArea');
-        html2canvas(element, { scale: 2, useCORS: true, logging: false }).then(canvas => {
-          const imgData = canvas.toDataURL('image/jpeg', 0.95);
-          const { jsPDF } = window.jspdf;
-          const pdf = new jsPDF('p', 'mm', 'a4');
-          const width = 210, height = 297;
-          const imgW = canvas.width, imgH = canvas.height;
-          const ratio = Math.min(width / imgW, height / imgH);
-          const w = imgW * ratio, h = imgH * ratio;
-          const x = (width - w) / 2, y = (height - h) / 2;
-          pdf.addImage(imgData, 'JPEG', x, y, w, h);
-          const out = pdf.output('arraybuffer');
-          setLastPdf(new Uint8Array(out));
-        }).catch(err => {
-          showToast('Error capturing HTML: ' + err.message, 2500);
+        // File Utility Reader
+        const readFileAsArrayBuffer = file => new Promise((res, rej) => {
+            const reader = new FileReader();
+            reader.onload = () => res(reader.result);
+            reader.onerror = rej;
+            reader.readAsArrayBuffer(file);
         });
-      });
 
-      // ---------- 4. MERGE PDFs (pdf-lib) ----------
-      document.getElementById('mergePdfBtn').addEventListener('click', async function() {
-        const files = document.getElementById('mergeInput').files;
-        if (!files || files.length < 2) { showToast('Select at least 2 PDF files', 1500); return; }
-        try {
-          const { PDFDocument } = window.PDFLib;
-          const mergedPdf = await PDFDocument.create();
-          for (let i = 0; i < files.length; i++) {
-            const arrayBuffer = await files[i].arrayBuffer();
-            const pdfDoc = await PDFDocument.load(arrayBuffer);
-            const indices = pdfDoc.getPageIndices();
-            const copiedPages = await mergedPdf.copyPages(pdfDoc, indices);
-            copiedPages.forEach(page => mergedPdf.addPage(page));
-          }
-          const mergedBytes = await mergedPdf.save();
-          setLastPdf(mergedBytes);
-          let names = Array.from(files).map(f => f.name).join(', ');
-          document.getElementById('mergePreview').innerHTML = `📎 merged ${files.length} files: ${names.substring(0,50)}${names.length>50?'…':''}`;
-        } catch (e) {
-          showToast('Merge error: ' + e.message, 2500);
+        // 1. Image Handlers
+        function handleImageSelect(e) {
+            selectedImages = Array.from(e.target.files);
+            const preview = document.getElementById('img-preview');
+            preview.innerHTML = '';
+            selectedImages.forEach((file, index) => {
+                const div = document.createElement('div');
+                div.className = 'relative group border rounded-xl overflow-hidden bg-slate-50';
+                div.innerHTML = `
+                    <img src="${URL.createObjectURL(file)}" class="w-full h-24 object-cover">
+                    <button onclick="removeImage(${index})" class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full text-xs opacity-0 group-hover:opacity-100 transition">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                `;
+                preview.appendChild(div);
+            });
+            lucide.createIcons();
+            setStatus(`${selectedImages.length} image(s) loaded`);
         }
-      });
 
-      // ---------- 5. EXTRACT pages (pdf-lib) ----------
-      document.getElementById('extractPagesBtn').addEventListener('click', async function() {
-        const fileInput = document.getElementById('extractInput');
-        const file = fileInput.files[0];
-        if (!file) { showToast('Select a PDF file', 1500); return; }
-        const start = parseInt(document.getElementById('extractStart').value) || 1;
-        const end = parseInt(document.getElementById('extractEnd').value) || 1;
-        if (start < 1 || end < start) { showToast('Invalid page range', 1500); return; }
-        try {
-          const { PDFDocument } = window.PDFLib;
-          const arrayBuffer = await file.arrayBuffer();
-          const srcDoc = await PDFDocument.load(arrayBuffer);
-          const totalPages = srcDoc.getPageCount();
-          if (start > totalPages) { showToast(`Start page ${start} > total ${totalPages}`, 1500); return; }
-          const endIdx = Math.min(end, totalPages);
-          const pageIndices = [];
-          for (let i = start - 1; i < endIdx; i++) pageIndices.push(i);
-          const newPdf = await PDFDocument.create();
-          const copiedPages = await newPdf.copyPages(srcDoc, pageIndices);
-          copiedPages.forEach(page => newPdf.addPage(page));
-          const bytes = await newPdf.save();
-          setLastPdf(bytes);
-          document.getElementById('extractPreview').innerHTML = `✂️ extracted pages ${start}-${endIdx} from ${file.name}`;
-        } catch (e) {
-          showToast('Extract error: ' + e.message, 2500);
+        function removeImage(index) {
+            selectedImages.splice(index, 1);
+            handleImageSelect({ target: { files: selectedImages } });
         }
-      });
 
-      // ---------- 6. ROTATE demo (generates sample PDF with rotated pages) ----------
-      document.getElementById('rotateDemoBtn').addEventListener('click', function() {
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        pdf.text('Page 1 (original)', 20, 30);
-        pdf.addPage();
-        pdf.text('Page 2 (rotated 90°)', 20, 30);
-        // rotate by using internal 'rotate' (jsPDF supports rotation via context)
-        // simpler: we use pdf-lib to rotate
-        (async function() {
-          try {
-            const { PDFDocument } = window.PDFLib;
-            const out = pdf.output('arraybuffer');
-            const doc = await PDFDocument.load(out);
-            const pages = doc.getPages();
-            if (pages.length >= 2) {
-              pages[1].setRotation(90);
+        // 2. Merge Handlers
+        function handleMergeSelect(e) {
+            selectedMergeFiles = Array.from(e.target.files);
+            const list = document.getElementById('merge-list');
+            list.innerHTML = '';
+            selectedMergeFiles.forEach((file, index) => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm';
+                li.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="file" class="w-4 h-4 text-slate-400"></i>
+                        <span class="font-medium text-slate-700">${file.name}</span>
+                    </div>
+                    <span class="text-xs text-slate-400">${(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                `;
+                list.appendChild(li);
+            });
+            lucide.createIcons();
+            setStatus(`${selectedMergeFiles.length} file(s) loaded`);
+        }
+
+        // 3. Extract Handler
+        function handleExtractSelect(e) {
+            if (e.target.files.length) {
+                selectedExtractFile = e.target.files[0];
+                document.getElementById('extract-file-name').innerText = selectedExtractFile.name;
+                setStatus('PDF loaded for extraction');
             }
-            const bytes = await doc.save();
-            setLastPdf(bytes);
-            showToast('Rotated page 2 by 90°', 1500);
-          } catch(e) { showToast('rotate demo error', 1500); }
-        })();
-      });
+        }
 
-      // ---------- 7. REORDER demo ----------
-      document.getElementById('reorderDemoBtn').addEventListener('click', function() {
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        pdf.text('Page A (should be second)', 20, 30);
-        pdf.addPage();
-        pdf.text('Page B (should be first)', 20, 30);
-        (async function() {
-          try {
-            const { PDFDocument } = window.PDFLib;
-            const out = pdf.output('arraybuffer');
-            const doc = await PDFDocument.load(out);
-            const pages = doc.getPages();
-            if (pages.length === 2) {
-              const [pageA, pageB] = pages;
-              doc.removePage(0);
-              doc.removePage(0); // now empty
-              // re-insert in swapped order
-              const newDoc = await PDFDocument.create();
-              const [copiedA, copiedB] = await newDoc.copyPages(doc, [0, 1]); // but doc empty? we need to use original pages
-              // better approach: swap using movePage
-              // recreate from scratch
-              const src = await PDFDocument.load(out);
-              const newPdf = await PDFDocument.create();
-              const idxB = 1, idxA = 0;
-              const [page1, page2] = await newPdf.copyPages(src, [idxB, idxA]);
-              newPdf.addPage(page1);
-              newPdf.addPage(page2);
-              const bytes = await newPdf.save();
-              setLastPdf(bytes);
-              showToast('Reordered pages: B → A', 1500);
-            } else {
-              showToast('Need exactly 2 pages', 1500);
+        // 4. Rotate Handler
+        function handleRotateSelect(e) {
+            if (e.target.files.length) {
+                selectedRotateFile = e.target.files[0];
+                document.getElementById('rotate-file-name').innerText = selectedRotateFile.name;
+                setStatus('PDF loaded for rotation');
             }
-          } catch(e) { showToast('reorder error', 1500); }
-        })();
-      });
-
-      // extra: update preview on image select
-      document.getElementById('imageInput').addEventListener('change', function(e) {
-        const files = e.target.files;
-        if (files && files.length) {
-          let names = Array.from(files).map(f => f.name).join(', ');
-          document.getElementById('imagePreview').innerHTML = `📸 ${files.length} image(s): ${names.substring(0,60)}${names.length>60?'…':''}`;
         }
-      });
-      document.getElementById('mergeInput').addEventListener('change', function(e) {
-        const files = e.target.files;
-        if (files && files.length) {
-          let names = Array.from(files).map(f => f.name).join(', ');
-          document.getElementById('mergePreview').innerHTML = `📎 ${files.length} PDF(s): ${names.substring(0,50)}${names.length>50?'…':''}`;
-        }
-      });
-      document.getElementById('extractInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) document.getElementById('extractPreview').innerHTML = `📄 ${file.name}`;
-      });
 
-      // auto toast cleanup
-      console.log('PDF Converter Pro ready');
-    })();
-  </script>
+        // Action Router
+        async function executeAction() {
+            try {
+                setStatus('Processing...');
+                switch (currentTab) {
+                    case 'images-to-pdf': await processImagesToPdf(); break;
+                    case 'merge-pdf': await processMergePdf(); break;
+                    case 'extract-pdf': await processExtractPdf(); break;
+                    case 'rotate-pdf': await processRotatePdf(); break;
+                    case 'text-to-pdf': await processTextToPdf(); break;
+                    case 'html-to-pdf': await processHtmlToPdf(); break;
+                }
+                setStatus('Complete');
+            } catch (err) {
+                alert('Error processing document: ' + err.message);
+                setStatus('Error encountered');
+            }
+        }
+
+        // Operation Engines
+        async function processImagesToPdf() {
+            if (!selectedImages.length) return alert('Select images first.');
+            const pdfDoc = await PDFLib.PDFDocument.create();
+
+            for (let file of selectedImages) {
+                const buffer = await readFileAsArrayBuffer(file);
+                let image;
+                if (file.type === 'image/png') image = await pdfDoc.embedPng(buffer);
+                else image = await pdfDoc.embedJpg(buffer);
+
+                const page = pdfDoc.addPage([image.width, image.height]);
+                page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
+            }
+
+            const bytes = await pdfDoc.save();
+            downloadBlob(bytes, 'images.pdf');
+        }
+
+        async function processMergePdf() {
+            if (selectedMergeFiles.length < 2) return alert('Select at least 2 PDFs to merge.');
+            const mergedPdf = await PDFLib.PDFDocument.create();
+
+            for (let file of selectedMergeFiles) {
+                const buffer = await readFileAsArrayBuffer(file);
+                const pdf = await PDFLib.PDFDocument.load(buffer);
+                const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                pages.forEach(p => mergedPdf.addPage(p));
+            }
+
+            const bytes = await mergedPdf.save();
+            downloadBlob(bytes, 'merged.pdf');
+        }
+
+        async function processExtractPdf() {
+            if (!selectedExtractFile) return alert('Select a PDF file first.');
+            const rangeStr = document.getElementById('extract-range').value.trim();
+            if (!rangeStr) return alert('Specify a range.');
+
+            const buffer = await readFileAsArrayBuffer(selectedExtractFile);
+            const pdfDoc = await PDFLib.PDFDocument.load(buffer);
+            const total = pdfDoc.getPageCount();
+
+            const indices = [];
+            rangeStr.split(',').forEach(part => {
+                part = part.trim();
+                if (part.includes('-')) {
+                    const [s, e] = part.split('-').map(Number);
+                    for (let i = s; i <= e; i++) if (i >= 1 && i <= total) indices.push(i - 1);
+                } else {
+                    const p = Number(part);
+                    if (p >= 1 && p <= total) indices.push(p - 1);
+                }
+            });
+
+            if (!indices.length) return alert('No valid page indices specified.');
+
+            const newPdf = await PDFLib.PDFDocument.create();
+            const pages = await newPdf.copyPages(pdfDoc, indices);
+            pages.forEach(p => newPdf.addPage(p));
+
+            const bytes = await newPdf.save();
+            downloadBlob(bytes, 'extracted_pages.pdf');
+        }
+
+        async function processRotatePdf() {
+            if (!selectedRotateFile) return alert('Select a PDF file first.');
+            const angle = Number(document.getElementById('rotate-angle').value);
+
+            const buffer = await readFileAsArrayBuffer(selectedRotateFile);
+            const pdfDoc = await PDFLib.PDFDocument.load(buffer);
+            
+            pdfDoc.getPages().forEach(page => {
+                const currentRotation = page.getRotation().angle;
+                page.setRotation(PDFLib.degrees((currentRotation + angle) % 360));
+            });
+
+            const bytes = await pdfDoc.save();
+            downloadBlob(bytes, 'rotated.pdf');
+        }
+
+        async function processTextToPdf() {
+            const text = document.getElementById('text-input').value;
+            if (!text.trim()) return alert('Enter some text.');
+
+            const pdfDoc = await PDFLib.PDFDocument.create();
+            let page = pdfDoc.addPage([600, 800]);
+            const font = await pdfDoc.embedStandardFont(PDFLib.StandardFonts.Helvetica);
+
+            const fontSize = 11;
+            const margin = 40;
+            const maxWidth = 520;
+            const lines = [];
+
+            text.split('\n').forEach(rawLine => {
+                const words = rawLine.split(' ');
+                let current = '';
+                words.forEach(w => {
+                    const test = current ? `${current} ${w}` : w;
+                    if (font.widthOfTextAtSize(test, fontSize) <= maxWidth) current = test;
+                    else { lines.push(current); current = w; }
+                });
+                lines.push(current);
+            });
+
+            let y = 760;
+            lines.forEach(line => {
+                if (y < margin) {
+                    page = pdfDoc.addPage([600, 800]);
+                    y = 760;
+                }
+                page.drawText(line, { x: margin, y, size: fontSize, font });
+                y -= fontSize + 5;
+            });
+
+            const bytes = await pdfDoc.save();
+            downloadBlob(bytes, 'document.pdf');
+        }
+
+        function processHtmlToPdf() {
+            const html = document.getElementById('html-input').value;
+            if (!html.trim()) return alert('Enter HTML content.');
+
+            const target = document.getElementById('html-render-target');
+            target.innerHTML = html;
+
+            const opt = {
+                margin: 0.5,
+                filename: 'rendered_html.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(target).save().then(() => {
+                target.innerHTML = '';
+            });
+        }
+
+        // Blob Downloader Utility
+        function downloadBlob(bytes, filename) {
+            const blob = new Blob([bytes], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+    </script>
 </body>
-    </html>
+</html>
